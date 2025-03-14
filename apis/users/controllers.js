@@ -1,4 +1,4 @@
-const generateToken = require("../../utils/generateToken");
+const {generateToken} = require("../../utils/generateToken");
 const { tryCatch } = require("../../utils/tryCatch");
 const authServices = require("./services");
 const { User } = require("../../Models/user");
@@ -11,7 +11,7 @@ exports.SignUp = tryCatch(async (req, res) => {
       throw new Error("Please Enter All the User Fields");
     }
   
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       res.status(400);
       throw new Error("User Already Exists");
@@ -36,14 +36,14 @@ exports.SignUp = tryCatch(async (req, res) => {
 
 exports.SignIn = tryCatch(async (req, res) => {
   const { email, password } = req.body;
-  
+    console.log(email, password);
     if (!email || !password) {
       res.status(400);
       throw new Error("Invalid request params for user login");
     }
   
     // Find a user with the entered email
-    const user = await UserModel.findOne({ email });
+    const user = await User.findOne({ email });
     // Check if a user with entered email exists and check if entered password
     // matches the stored user password
     if (user && (await user.matchPasswords(password))) {

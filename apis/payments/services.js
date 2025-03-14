@@ -39,7 +39,7 @@ module.exports = {
         const pay = validatePaymentVerification({order_id, payment_id}, razorpay_signature, process.env.RAZORPAY_SECRET_KEY);
         if(pay){
             const order = await Payment.findOne({orderId: order_id});
-            await Coupon.create({userId: user_id, week: order.selected, taken: true});
+            await Coupon.updateOne({userId: user_id},{$set : {week : order.selected,taken : true}}, { upsert: true });
         }
 
         return pay;
