@@ -18,7 +18,7 @@ exports.SignUp = tryCatch(async (req, res) => {
     }
     const newUserDetails = { name, email, password, isAdmin};
   
-    const createdUser = await UserModel.create(newUserDetails);
+    const createdUser = await User.create(newUserDetails);
   
     if (!createdUser) {
       res.status(404);
