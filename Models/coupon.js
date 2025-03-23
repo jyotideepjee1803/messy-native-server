@@ -8,6 +8,14 @@ const couponSchema = new mongoose.Schema({
         [false, false, false, false, false, false, false], // Lunch
         [false, false, false, false, false, false, false]  // Dinner
     ],
+    qrInfo: {
+        type: Map,
+        of: {
+            qrCode: String,  // Encoded QR data
+            scanned: { type: Boolean, default: false }, // If QR is scanned
+            createdAt: { type: Date, default: Date.now } // QR generation time
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now,

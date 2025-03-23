@@ -8,5 +8,6 @@ router.get('/', verifyJWT, CouponController.userCoupon)
 router.get('/totalMeal', verifyJWT, checkAdmin, CouponController.totalMeals)
 router.post('/buy', verifyJWT, CouponController.purchaseCoupon)
 router.post('/validity', verifyJWT, CouponController.couponValidity)
+router.post('/scan', verifyJWT, CouponController.scanCoupon)
 
 module.exports = router;

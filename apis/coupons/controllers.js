@@ -80,4 +80,15 @@ module.exports = {
       res.status(500).json({ error: error.message });
     }
   },
+
+  scanCoupon: async (req, res) => {
+    try {
+      const { userId, day, mealType, qrCode } = req.body;
+      const result = await CouponService.couponScan(userId, day, mealType, qrCode);
+      return res.status(result.success ? 200 : 400).json(result);
+    } catch (error) {
+      console.error("Error in scanCoupon:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
 };

@@ -55,8 +55,38 @@ const couponPurchase = async (userId, selected) => {
   return result;
 };
 
+const couponScan = async(userId, day, mealType, qrCode) => {
+  try{
+      const coupon = await Coupon.findOne({ userId});
+      if (!coupon) return { success: false, message: "Coupon not found" };
+
+      const qrKey = `${day}.${mealType}`;
+      const qrData = coupon.qrInfo.get(qrKey);
+
+      if (!qrData || qrData.qrCode !== qrCode) {
+        return { success: false, message: "Invalid QR Code" };
+      }
+
+      if (qrData.scanned) {
+        return { success: false, message: "QR Code already used" };
+      }
+
+      qrData.scanned = true;
+      coupon.week[mealType === "breakfast" ? 0 : mealType === "lunch" ? 1 : 2][dayIndex] = false;
+
+      await coupon.save();
+
+      return { success: true, message: "Coupon redeemed successfully!" };
+  } catch (error) {
+      console.error("Error scanning QR:", error);
+      return { success: false, message: "Internal Server Error" };
+  }
+
+}
+
 module.exports = {
   couponValidity,
   totalMealCount,
   couponPurchase,
+  couponScan,
 };
