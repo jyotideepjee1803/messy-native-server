@@ -55,23 +55,24 @@ const couponPurchase = async (userId, selected) => {
   return result;
 };
 
-const couponScan = async(userId, day, mealType, qrCode) => {
+const couponScan = async(userId, dayIndex, mealType, qrCode) => {
   try{
       const coupon = await Coupon.findOne({ userId});
       if (!coupon) return { success: false, message: "Coupon not found" };
 
-      const qrKey = `${day}.${mealType}`;
+      const qrKey = `${dayIndex}-${mealType}`;
       const qrData = coupon.qrInfo.get(qrKey);
+
+      if (qrData.scanned) {
+        return { success: true, message: "QR Code already used" };
+      }
 
       if (!qrData || qrData.qrCode !== qrCode) {
         return { success: false, message: "Invalid QR Code" };
       }
 
-      if (qrData.scanned) {
-        return { success: false, message: "QR Code already used" };
-      }
-
       qrData.scanned = true;
+      coupon.qrInfo.set(qrKey, qrData);
       coupon.week[mealType === "breakfast" ? 0 : mealType === "lunch" ? 1 : 2][dayIndex] = false;
 
       await coupon.save();

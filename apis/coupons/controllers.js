@@ -83,8 +83,9 @@ module.exports = {
 
   scanCoupon: async (req, res) => {
     try {
-      const { userId, day, mealType, qrCode } = req.body;
-      const result = await CouponService.couponScan(userId, day, mealType, qrCode);
+      const { userId, dayIndex, mealType } = req.body;
+      const qrCode = `${userId}-${dayIndex}-${mealType}`;
+      const result = await CouponService.couponScan(userId, dayIndex, mealType, qrCode);
       return res.status(result.success ? 200 : 400).json(result);
     } catch (error) {
       console.error("Error in scanCoupon:", error);

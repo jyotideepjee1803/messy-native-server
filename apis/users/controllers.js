@@ -36,7 +36,6 @@ exports.SignUp = tryCatch(async (req, res) => {
 
 exports.SignIn = tryCatch(async (req, res) => {
   const { email, password } = req.body;
-    console.log(email, password);
     if (!email || !password) {
       res.status(400);
       throw new Error("Invalid request params for user login");
