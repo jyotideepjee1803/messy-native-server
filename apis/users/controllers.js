@@ -59,6 +59,33 @@ exports.SignIn = tryCatch(async (req, res) => {
     }
 });
 
+exports.updateUser = tryCatch(async (req, res) => {
+  const userId = req.params.id;
+  const { name, email, password } = req.body;
+
+  // Find user by ID
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  // Update user details
+  if (name) user.name = name;
+  if (email) user.email = email;
+  if (password) user.password = password;
+  
+  await user.save();
+  
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+  });
+
+});
+
 exports.getUserData = tryCatch(async (req, res) => {
   const userId = req.params.id;
   const foundUser = await User.findOne({ _id: userId });
