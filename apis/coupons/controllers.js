@@ -85,6 +85,15 @@ module.exports = {
     try {
       const { userId, dayIndex, mealType } = req.body;
       const qrCode = `${userId}-${dayIndex}-${mealType}`;
+
+      const currentDayIndex = new Date().getDay() - 1; // Adjusting for week starting from Monday
+      if (currentDayIndex === -1) currentDayIndex = 6; // Adjust Sunday to index 6
+
+      // Ensure scanning is only possible for the correct day
+      if (currentDayIndex !== parseInt(dayIndex, 10)) {
+          return res.status(400).json({ success: false, message: "You can only scan today's coupon." });
+      }
+
       const result = await CouponService.couponScan(userId, dayIndex, mealType, qrCode);
       return res.status(result.success ? 200 : 400).json(result);
     } catch (error) {
