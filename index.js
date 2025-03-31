@@ -30,12 +30,15 @@ app.use(
     credentials: true,
   })
 );
+app.get("/", (req, res) => {
+  res.send("Welcome to the Messy API!");
+});
 app.use("/users", userRoutes);
 app.use("/days", dayRoutes);
 app.use("/meals", mealRoutes);
 app.use("/coupons", couponRoutes);
 app.use("/payments", paymentRoutes);
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
