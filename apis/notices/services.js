@@ -1,4 +1,4 @@
-const Notice = require('../models/Notice');
+const { Notice } = require("../../Models/notice");
 
 module.exports = {
     createNotice: async (data) => {

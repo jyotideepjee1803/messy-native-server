@@ -12,6 +12,7 @@ const dayRoutes = require("./apis/days/routes");
 const mealRoutes = require("./apis/meals/routes");
 const couponRoutes = require("./apis/coupons/routes");
 const paymentRoutes = require("./apis/payments/routes");
+const noticeRoutes = require("./apis/notices/routes");
 
 const PORT = process.env.PORT || 5000;
 
@@ -38,6 +39,7 @@ app.use("/days", dayRoutes);
 app.use("/meals", mealRoutes);
 app.use("/coupons", couponRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/notices", noticeRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
