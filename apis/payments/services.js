@@ -53,7 +53,22 @@ module.exports = {
                 }
               }
             }
-            await Coupon.updateOne({userId: user_id},{$set : {week : order.selected,taken : true,  qrInfo: qrInfo}}, { upsert: true });
+            // Fetch existing coupons for the user
+            const existingCoupons = await Coupon.find({ userId: user_id }).sort({ createdAt: -1 });
+
+            if (existingCoupons.length < 2) {
+                // Directly insert if less than 2 coupons exist
+                await Coupon.create({ userId: user_id, week: order.selected, taken: true, qrInfo, createdAt: new Date() });
+            } else {
+                const lastCoupon = existingCoupons[0];
+                const fiveDaysAgo = new Date();
+                fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+                if (lastCoupon.createdAt <= fiveDaysAgo) {
+                    // Insert only if the latest coupon is at least 5 days old
+                    await Coupon.create({ userId: user_id, week: order.selected, taken: true, qrInfo, createdAt: new Date() });
+                }
+            }
         }
 
         return pay;
