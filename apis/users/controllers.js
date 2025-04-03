@@ -103,3 +103,23 @@ exports.adminStatus = tryCatch(async (req, res) => {
 
   res.status(200).json(isAdmin).end();
 });
+
+exports.updateFCMToken = tryCatch(async (req, res) => {
+  const { userId, fcmToken } = req.body;
+
+  if (!userId || !fcmToken) {
+    res.status(400);
+    throw new Error("User ID and FCM token are required");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  user.fcmToken = fcmToken;
+  await user.save();
+
+  res.status(200).json({ message: "FCM token updated successfully" });
+});

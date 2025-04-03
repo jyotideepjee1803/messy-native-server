@@ -10,5 +10,6 @@ router.post("/signIn", authController.SignIn);
 router.put("/updateUser/:id", verifyJWT, authController.updateUser);
 router.get("/adminCheck/:id", verifyJWT, authController.adminStatus);
 router.get("/getUser/:id", verifyJWT, authController.getUserData);
+router.post("/updateFCMToken", authController.updateFCMToken);
 
 module.exports = router;

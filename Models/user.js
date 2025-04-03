@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
     maxlength: 1024,
   },
   isAdmin: { type: Boolean, required: true, default: false },
+  fcmToken: { type: String, default: null },
 });
 
 // Checking if entered password by user during login is authentic
