@@ -9,6 +9,9 @@ admin.initializeApp({
 
 const sendPushNotification = async (tokens, title, body) => {
     const message = {
+        data:{
+            "press_action_id": "default"
+        },
         notification: {
             title,
             body,
