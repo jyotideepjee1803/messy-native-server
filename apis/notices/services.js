@@ -21,7 +21,7 @@ module.exports = {
     },
 
     getNotices: async () => {
-        return await Notice.find();
+        return await Notice.find().sort({ createdAt: -1 });
     },
 
     updateNotice: async (id, data) => {
