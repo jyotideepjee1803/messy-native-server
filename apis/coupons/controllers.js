@@ -1,6 +1,22 @@
 const { Coupon } = require('../../Models/coupon');
 const CouponService = require('./services');
 
+const getWeekStartAndEndDates = (date) => {
+  const startOfWeek = new Date(date);
+  const dayOfWeek = startOfWeek.getDay(); // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
+
+  // Adjust the date to Monday (start of the week)
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If it's Sunday (0), adjust to previous Monday (-6)
+  startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
+  startOfWeek.setHours(0, 0, 0, 0); // Set to start of day
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6); // End of the week (Sunday)
+  endOfWeek.setHours(23, 59, 59, 999); // Set to end of day
+
+  return { startOfWeek, endOfWeek };
+};
+
 module.exports = {
   userCoupon: async (req, res) => {
     const { userId } = req.query;
@@ -8,17 +24,38 @@ module.exports = {
     if (!userId) {
       return res.status(400).send({ message: "User ID is required!" });
     }
-
     try {
-      const coupons = await Coupon.find({ userId }).select({ _id: 0 }).sort({ createdAt: -1 });
-
+      // Get current date and calculate current and next week ranges
+      const currentDate = new Date();
+      const { startOfWeek: currentWeekStart, endOfWeek: currentWeekEnd } = getWeekStartAndEndDates(currentDate);
+      const { startOfWeek: nextWeekStart, endOfWeek: nextWeekEnd } = getWeekStartAndEndDates(new Date(currentDate.setDate(currentDate.getDate() + 7)));
+  
+      // Fetch coupons from the database
+      const coupons = await Coupon.find({ userId })
+        .select({ _id: 0 })
+        .sort({ createdAt: -1 });
+  
       if (coupons.length === 0) {
         return res.status(200).send({ message: "Coupon not found for this user!" });
       }
-
-      const validCoupons = coupons.slice(0, 2);
-      res.json({ coupons: validCoupons });
-
+  
+      // Filter coupons for current and next week
+      const validCoupons = coupons.filter((coupon) => {
+        const createdAt = new Date(coupon.createdAt);
+        // Check if coupon's created date is within the current or next week
+        return (createdAt >= currentWeekStart && createdAt <= currentWeekEnd) || (createdAt >= nextWeekStart && createdAt <= nextWeekEnd);
+      });
+  
+      // Only return at most one coupon for each week
+      const currentWeekCoupon = validCoupons.find((coupon) => new Date(coupon.createdAt) >= currentWeekStart && new Date(coupon.createdAt) <= currentWeekEnd);
+      const nextWeekCoupon = validCoupons.find((coupon) => new Date(coupon.createdAt) >= nextWeekStart && new Date(coupon.createdAt) <= nextWeekEnd);
+  
+      const responseCoupons = [];
+      if (currentWeekCoupon) responseCoupons.push(currentWeekCoupon);
+      if (nextWeekCoupon) responseCoupons.push(nextWeekCoupon);
+  
+      res.json({ coupons: responseCoupons });
+  
     } catch (error) {
       console.error("Error in userCoupon:", error);
       res.status(500).json({ error: error.message });
