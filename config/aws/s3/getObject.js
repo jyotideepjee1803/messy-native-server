@@ -1,5 +1,5 @@
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
-const { s3Client } = require("./s3-credentials");
+const { s3Client } = require("./bucket-credentials");
 
 exports.getObject = async(key) =>{
     try{
