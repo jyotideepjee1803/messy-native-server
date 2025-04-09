@@ -2,6 +2,7 @@ const {generateToken} = require("../../utils/generateToken");
 const { tryCatch } = require("../../utils/tryCatch");
 const authServices = require("./services");
 const { User } = require("../../Models/user");
+const { putObject } = require("../../config/aws/s3/putObject");
 
 exports.SignUp = tryCatch(async (req, res) => {
   const { name, email, password, isAdmin } = req.body;
@@ -123,3 +124,21 @@ exports.updateFCMToken = tryCatch(async (req, res) => {
 
   res.status(200).json({ message: "FCM token updated successfully" });
 });
+
+exports.upload = async(req,res) => {
+  try{
+    if (!file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const fileName = `${Date.now()}-${file.originalname}`;
+    const result = await putObject(file.buffer, fileName, file.mimetype);
+
+    if (!result) return res.status(500).json({ message: 'Upload failed' });
+
+    res.json({
+      message: 'File uploaded successfully!',
+      fileUrl: result.url,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}

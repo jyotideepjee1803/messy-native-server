@@ -1,4 +1,4 @@
-const { sendPushNotification } = require("../../config/firebaseConfig");
+const { sendPushNotification } = require("../../config/firebase/firebaseConfig");
 const { Notice } = require("../../Models/notice");
 const { User} = require("../../Models/user");
 
