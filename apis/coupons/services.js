@@ -1,4 +1,5 @@
 const { Coupon } = require('../../Models/coupon');
+const { getWeekStartAndEndDates } = require('../../utils/weekRange');
 
 // Validate coupon validity
 const couponValidity = async (email, day, mealType) => {
@@ -13,62 +14,41 @@ const couponValidity = async (email, day, mealType) => {
 // Count total meals for the week
 const totalMealCount = async () => {
   const allCoupons = await Coupon.find({});
+  
+  // Initialize meal counters: [breakfast][days], [lunch][days], [dinner][days]
   const currentWeekCounts = [
-    [0, 0, 0, 0, 0, 0, 0], // Breakfast
-    [0, 0, 0, 0, 0, 0, 0], // Lunch
-    [0, 0, 0, 0, 0, 0, 0], // Dinner
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
   ];
+
   const nextWeekCounts = [
-    [0, 0, 0, 0, 0, 0, 0], // Breakfast
-    [0, 0, 0, 0, 0, 0, 0], // Lunch
-    [0, 0, 0, 0, 0, 0, 0], // Dinner
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
   ];
 
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+  const currentDate = new Date();
+  const { startOfWeek: currentWeekStart, endOfWeek: currentWeekEnd } = getWeekStartAndEndDates(currentDate);
+  const { startOfWeek: nextWeekStart, endOfWeek: nextWeekEnd } = getWeekStartAndEndDates(new Date(currentDate.setDate(currentDate.getDate() + 7)));
 
-  // Get the start (Monday) and end (Sunday) of the current week
-  const startOfCurrentWeek = new Date(today);
-  startOfCurrentWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Move to Monday
-  startOfCurrentWeek.setHours(0, 0, 0, 0);
+  for (const coupon of allCoupons) {
+    const weekStart = new Date(coupon.weekStartDate);
+    const isCurrent = weekStart.getTime() === currentWeekStart.getTime();
+    const isNext = weekStart.getTime() === nextWeekStart.getTime();
 
-  const endOfCurrentWeek = new Date(startOfCurrentWeek);
-  endOfCurrentWeek.setDate(startOfCurrentWeek.getDate() + 6); // Move to Sunday
-  endOfCurrentWeek.setHours(23, 59, 59, 999);
-
-  // Get start and end of next week
-  const startOfNextWeek = new Date(endOfCurrentWeek);
-  startOfNextWeek.setDate(endOfCurrentWeek.getDate() + 1); // Move to next Monday
-  startOfNextWeek.setHours(0, 0, 0, 0);
-
-  const endOfNextWeek = new Date(startOfNextWeek);
-  endOfNextWeek.setDate(startOfNextWeek.getDate() + 6); // Move to next Sunday
-  endOfNextWeek.setHours(23, 59, 59, 999);
-
-  allCoupons.forEach((coupon) => {
-    const updatedAt = new Date(coupon.createdAt);
-
-    if (updatedAt >= startOfCurrentWeek && updatedAt <= endOfCurrentWeek) {
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 7; j++) {
-          if (coupon.week[i][j] === true) {
-            currentWeekCounts[i][j]++;
-          }
-        }
-      }
-    } 
-    else if (updatedAt >= startOfNextWeek && updatedAt <= endOfNextWeek) {
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 7; j++) {
-          if (coupon.week[i][j] === true) {
-            nextWeekCounts[i][j]++;
+    if (isCurrent || isNext) {
+      const targetCounts = isCurrent ? currentWeekCounts : nextWeekCounts;
+      for (let meal = 0; meal < 3; meal++) {
+        for (let day = 0; day < 7; day++) {
+          if (coupon.week[meal][day] === true) {
+            targetCounts[meal][day]++;
           }
         }
       }
     }
-  });
+  }
 
-  // Format meal counts into a structured object
   const formatWeekCounts = (mealsCount) =>
     mealsCount[0].map((_, index) => ({
       breakfast: mealsCount[0][index],

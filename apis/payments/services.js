@@ -2,6 +2,7 @@ const Razorpay = require('razorpay')
 const {Payment} = require('../../Models/payment')
 const {Coupon} = require('../../Models/coupon');
 const { validatePaymentVerification } = require('razorpay/dist/utils/razorpay-utils');
+const { getWeekStartAndEndDates } = require('../../utils/weekRange');
 
 const razorpay = new Razorpay({key_id : process.env.RAZORPAY_ID_KEY, key_secret: process.env.RAZORPAY_SECRET_KEY});
 
@@ -35,43 +36,56 @@ module.exports = {
         }        
     },
 
-    paymentStatus : async(user_id, order_id, payment_id, razorpay_signature) => {
-        const pay = validatePaymentVerification({order_id, payment_id}, razorpay_signature, process.env.RAZORPAY_SECRET_KEY);
-        if(pay){
-            const order = await Payment.findOne({orderId: order_id});
-            const weekData = order.selected;
-            const qrInfo = {};
-            for (let mealIndex = 0; mealIndex < 3; mealIndex++) { // 0: Breakfast, 1: Lunch, 2: Dinner
-              for (let dayIndex = 0; dayIndex < 7; dayIndex++) { // 7 days a week
-                if (weekData[mealIndex][dayIndex]) {
-                  const qrKey = `${dayIndex}-${mealIndex}`;
-                  qrInfo[qrKey] = {
-                    qrCode: `${user_id}-${dayIndex}-${mealIndex}`, // Simple QR Format
-                    scanned: false,
-                    createdAt: new Date(),
-                  };
-                }
-              }
-            }
-            // Fetch existing coupons for the user
-            const existingCoupons = await Coupon.find({ userId: user_id }).sort({ createdAt: -1 });
-
-            if (existingCoupons.length < 2) {
-                // Directly insert if less than 2 coupons exist
-                await Coupon.create({ userId: user_id, week: order.selected, taken: true, qrInfo, createdAt: new Date() });
-            } else {
-                const lastCoupon = existingCoupons[0];
-                const fiveDaysAgo = new Date();
-                fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-
-                if (lastCoupon.createdAt <= fiveDaysAgo) {
-                    // Insert only if the latest coupon is at least 5 days old
-                    await Coupon.create({ userId: user_id, week: order.selected, taken: true, qrInfo, createdAt: new Date() });
-                }
-            }
+    paymentStatus: async (user_id, order_id, payment_id, razorpay_signature) => {
+      const pay = validatePaymentVerification(
+        { order_id, payment_id },
+        razorpay_signature,
+        process.env.RAZORPAY_SECRET_KEY
+      );
+    
+      if (!pay) return false;
+    
+      const order = await Payment.findOne({ orderId: order_id });
+      const weekData = order.selected;
+      const qrInfo = {};
+    
+      for (let mealIndex = 0; mealIndex < 3; mealIndex++) {
+        for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+          if (weekData[mealIndex][dayIndex]) {
+            const qrKey = `${dayIndex}-${mealIndex}`;
+            qrInfo[qrKey] = {
+              qrCode: `${user_id}-${dayIndex}-${mealIndex}`,
+              scanned: false,
+              createdAt: new Date(),
+            };
+          }
         }
-
-        return pay;
+      }
+    
+      // Always target the next week's Monday
+      const today = new Date();
+      const nextWeekDate = new Date(today);
+      nextWeekDate.setDate(today.getDate() + 7);
+      const { startOfWeek: weekStartDate } = getWeekStartAndEndDates(nextWeekDate);
+    
+      // Check if a coupon already exists for that week
+      const existingCoupon = await Coupon.findOne({ userId: user_id, weekStartDate });
+    
+      if (!existingCoupon) {
+        const res = await Coupon.create({
+          userId: user_id,
+          week: order.selected,
+          taken: true,
+          qrInfo,
+          weekStartDate,
+          createdAt: new Date(),
+        });
+        console.log("New Coupon Created:", res);
+      } else {
+        console.log("Coupon for this week already exists.");
+      }
+    
+      return true;
     }
-
+    
 }

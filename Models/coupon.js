@@ -16,6 +16,9 @@ const couponSchema = new mongoose.Schema({
             createdAt: { type: Date, default: Date.now } // QR generation time
         }
     },
+    weekStartDate: {
+        type: Date,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
