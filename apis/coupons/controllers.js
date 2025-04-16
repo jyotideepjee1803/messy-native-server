@@ -26,8 +26,8 @@ module.exports = {
       // });
   
       // Only return at most one coupon for each week
-      const currentWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getTime() === currentWeekStart.getTime());
-      const nextWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getTime() === nextWeekStart.getTime());
+      const currentWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === currentWeekStart.getDate());
+      const nextWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === nextWeekStart.getDate());
   
       const responseCoupons = [];
       if (currentWeekCoupon) responseCoupons.push(currentWeekCoupon);
