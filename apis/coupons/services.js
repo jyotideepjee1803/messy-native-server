@@ -35,8 +35,8 @@ const totalMealCount = async () => {
 
   for (const coupon of allCoupons) {
     const weekStart = new Date(coupon.weekStartDate);
-    const isCurrent = weekStart.getTime() === currentWeekStart.getTime();
-    const isNext = weekStart.getTime() === nextWeekStart.getTime();
+    const isCurrent = weekStart.getDay() === currentWeekStart.getDay();
+    const isNext = weekStart.getDay() === nextWeekStart.getDay();
 
     if (isCurrent || isNext) {
       const targetCounts = isCurrent ? currentWeekCounts : nextWeekCounts;
