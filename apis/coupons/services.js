@@ -31,6 +31,7 @@ const totalMealCount = async () => {
   const currentDate = new Date();
   const { startOfWeek: currentWeekStart, endOfWeek: currentWeekEnd } = getWeekStartAndEndDates(currentDate);
   const { startOfWeek: nextWeekStart, endOfWeek: nextWeekEnd } = getWeekStartAndEndDates(new Date(currentDate.setDate(currentDate.getDate() + 7)));
+  console.log(currentWeekStart, nextWeekStart);
 
   for (const coupon of allCoupons) {
     const weekStart = new Date(coupon.weekStartDate);
