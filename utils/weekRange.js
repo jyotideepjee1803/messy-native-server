@@ -1,16 +1,15 @@
-const getWeekStartAndEndDates = (date) => {
-    const startOfWeek = new Date(date);
-    startOfWeek.setDate(startOfWeek.getDate());
-    const dayOfWeek = startOfWeek.getDay(); // Get the day of the week (0 = Sunday, 1 = Monday, etc.)
+const getWeekStartAndEndDates = (inputDate) => {
+    const date = new Date(inputDate); // Clone the input date to avoid mutation
+    const day = date.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+    const diffToMonday = day === 0 ? -6 : 1 - day; // If Sunday, go back 6 days, else move to Monday
   
-    // Adjust the date to Monday (start of the week)
-    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If it's Sunday (0), adjust to previous Monday (-6)
-    startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
-    startOfWeek.setHours(0, 0, 0, 0); // Set to start of day
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() + diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0); // Set to start of the day
   
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // End of the week (Sunday)
-    endOfWeek.setHours(23, 59, 59, 999); // Set to end of day
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999); // Set to end of the day
   
     return { startOfWeek, endOfWeek };
 };
