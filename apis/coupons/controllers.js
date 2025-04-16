@@ -28,13 +28,11 @@ module.exports = {
       // Only return at most one coupon for each week
       const currentWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === currentWeekStart.getDate());
       const nextWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === nextWeekStart.getDate());
-  
-      const responseCoupons = [];
-      if (currentWeekCoupon) responseCoupons.push(currentWeekCoupon);
-      if (nextWeekCoupon) responseCoupons.push(nextWeekCoupon);
-  
-      res.json({ coupons: responseCoupons });
-  
+
+      res.json({
+        currentWeek: currentWeekCoupon,
+        nextWeek: nextWeekCoupon,
+      });
     } catch (error) {
       console.error("Error in userCoupon:", error);
       res.status(500).json({ error: error.message });
