@@ -86,10 +86,12 @@ const couponScan = async(userId, dayIndex, mealType, qrCode) => {
       const qrData = coupon.qrInfo.get(qrKey);
 
       if (qrData.scanned) {
+        console.log("QR used");
         return { success: true, message: "QR Code already used" };
       }
 
       if (!qrData || qrData.qrCode !== qrCode) {
+        console.log("Invalid");
         return { success: false, message: "Invalid QR Code" };
       }
 

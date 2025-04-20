@@ -3,6 +3,7 @@ const { tryCatch } = require("../../utils/tryCatch");
 const authServices = require("./services");
 const { User } = require("../../Models/user");
 const { putObject } = require("../../config/aws/s3/putObject");
+const sendOtpEmail = require("../../utils/sendOTPMail");
 
 exports.SignUp = tryCatch(async (req, res) => {
   const { name, email, password, isAdmin } = req.body;
@@ -47,18 +48,62 @@ exports.SignIn = tryCatch(async (req, res) => {
     // Check if a user with entered email exists and check if entered password
     // matches the stored user password
     if (user && (await user.matchPasswords(password))) {
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.otp = otp;
+      user.otpExpires = Date.now() + 5 * 60 * 1000;
+      await user.save();
+
+      await sendOtpEmail(email, otp);
+
       res.status(200).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin : user.isAdmin,
-        token: generateToken(user._id),
+        message: "OTP sent to your email",
+        userId: user._id,
       });
+      // res.status(200).json({
+      //   _id: user._id,
+      //   name: user.name,
+      //   email: user.email,
+      //   isAdmin : user.isAdmin,
+      //   token: generateToken(user._id),
+      // });
     } else {
       res.status(401);
       throw new Error("Invalid Email or Password");
     }
 });
+
+exports.verifyOtp = tryCatch(async (req, res) => {
+  const { userId, otp } = req.body;
+  if (!userId || !otp) {
+    res.status(400);
+    throw new Error("Missing OTP or userId");
+  }
+
+  const user = await User.findById(userId);
+  if (
+    user &&
+    user.otp === otp &&
+    user.otpExpires > Date.now()
+  ) {
+    // Clear OTP after verification
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(401);
+    throw new Error("Invalid or expired OTP");
+  }
+});
+
 
 exports.updateUser = tryCatch(async (req, res) => {
   const userId = req.params.id;
