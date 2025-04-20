@@ -55,7 +55,7 @@ module.exports = {
       const { userId, dayIndex, mealType } = req.body;
       const qrCode = `${userId}-${dayIndex}-${mealType}`;
 
-      const currentDayIndex = new Date().getDay() - 1; // Adjusting for week starting from Monday
+      let currentDayIndex = new Date().getDay() - 1; // Adjusting for week starting from Monday
       if (currentDayIndex === -1) currentDayIndex = 6; // Adjust Sunday to index 6
 
       // Ensure scanning is only possible for the correct day
