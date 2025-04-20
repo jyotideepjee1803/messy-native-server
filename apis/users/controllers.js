@@ -2,8 +2,40 @@ const {generateToken} = require("../../utils/generateToken");
 const { tryCatch } = require("../../utils/tryCatch");
 const authServices = require("./services");
 const { User } = require("../../Models/user");
+const { OTP } = require("../../Models/otp");
 const { putObject } = require("../../config/aws/s3/putObject");
 const sendOtpEmail = require("../../utils/sendOTPMail");
+
+exports.registrationOTP = tryCatch(async (req, res) => {
+  const {email} = req.body;
+  const existingUser = await User.findOne({email});
+  if(existingUser){
+    res.status(400);
+    throw new Error("User Already Exists");
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const resp = await OTP.create({email, otp});
+  await sendOtpEmail(email, otp);
+  res.status(200).json({
+    email, otp
+  });
+})
+
+exports.verfiyEmail = tryCatch(async(req, res) => {
+  const {email, otp} = req.body;
+  const response = await OTP.find({email}).sort({createdAt: -1}).limit(1);
+  if (response.length === 0 || otp !== response[0].otp) {
+    return res.status(400).json({
+      success: false,
+      message: 'The OTP is not valid',
+    });
+  }
+
+  res.status(200).json({
+    email
+  });
+})
 
 exports.SignUp = tryCatch(async (req, res) => {
   const { name, email, password, isAdmin } = req.body;
@@ -50,23 +82,15 @@ exports.SignIn = tryCatch(async (req, res) => {
     if (user && (await user.matchPasswords(password))) {
 
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      user.otp = otp;
-      user.otpExpires = Date.now() + 5 * 60 * 1000;
-      await user.save();
-
+      
+      const resp = await OTP.create({email, otp});
       await sendOtpEmail(email, otp);
 
       res.status(200).json({
         message: "OTP sent to your email",
         userId: user._id,
+        email,
       });
-      // res.status(200).json({
-      //   _id: user._id,
-      //   name: user.name,
-      //   email: user.email,
-      //   isAdmin : user.isAdmin,
-      //   token: generateToken(user._id),
-      // });
     } else {
       res.status(401);
       throw new Error("Invalid Email or Password");
@@ -74,34 +98,26 @@ exports.SignIn = tryCatch(async (req, res) => {
 });
 
 exports.verifyOtp = tryCatch(async (req, res) => {
-  const { userId, otp } = req.body;
+  const { userId, otp, email } = req.body;
   if (!userId || !otp) {
     res.status(400);
     throw new Error("Missing OTP or userId");
   }
 
   const user = await User.findById(userId);
-  if (
-    user &&
-    user.otp === otp &&
-    user.otpExpires > Date.now()
-  ) {
-    // Clear OTP after verification
-    user.otp = null;
-    user.otpExpires = null;
-    await user.save();
-
-    res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      token: generateToken(user._id),
-    });
-  } else {
+  const response = await OTP.find({email}).sort({createdAt: -1}).limit(1);
+  if (response.length === 0 || otp !== response[0].otp) {
     res.status(401);
     throw new Error("Invalid or expired OTP");
   }
+
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    token: generateToken(user._id),
+  });
 });
 
 

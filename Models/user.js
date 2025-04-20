@@ -19,12 +19,6 @@ const userSchema = new mongoose.Schema({
   },
   isAdmin: { type: Boolean, required: true, default: false },
   fcmToken: { type: String, default: null },
-  otp: {
-    type: String,
-  },
-  otpExpires: {
-    type: Date,
-  },
 });
 
 // Checking if entered password by user during login is authentic
