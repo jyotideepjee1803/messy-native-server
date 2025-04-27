@@ -6,6 +6,6 @@ const router = express.Router()
 
 router.get('/', verifyJWT, CouponController.userCoupon)
 router.get('/totalMeal', verifyJWT, checkAdmin, CouponController.totalMeals)
-router.post('/scan', verifyJWT, CouponController.scanCoupon)
+router.post('/scan', verifyJWT, checkAdmin, CouponController.scanCoupon)
 
 module.exports = router;

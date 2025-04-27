@@ -1,4 +1,5 @@
 const { Coupon } = require('../../Models/coupon');
+const { decrypt } = require('../../utils/decrypt');
 const { getWeekStartAndEndDates } = require('../../utils/weekRange');
 const CouponService = require('./services');
 
@@ -52,7 +53,13 @@ module.exports = {
 
   scanCoupon: async (req, res) => {
     try {
-      const { userId, dayIndex, mealType } = req.body;
+      const {encryptedData} = req.body;
+      if (!encryptedData) {
+        return res.status(400).json({ success: false, message: "No QR data received." });
+      }
+      
+      const data = decrypt(encryptedData);
+      const { userId, dayIndex, mealType } = data;
       const qrCode = `${userId}-${dayIndex}-${mealType}`;
 
       let currentDayIndex = new Date().getDay() - 1; // Adjusting for week starting from Monday
