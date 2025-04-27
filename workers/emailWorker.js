@@ -1,6 +1,19 @@
+const express = require('express');
 const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const nodemailer = require('nodemailer');
+
+const app = express();
+
+// Create a dummy server just to satisfy Render
+const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => {
+  res.send('Email Worker is running');
+});
+app.listen(PORT, () => {
+  console.log(`Worker server listening on port ${PORT}`);
+});
+
 
 const connection = new Redis(process.env.REDIS_URL, {
     maxRetriesPerRequest: null
