@@ -17,7 +17,7 @@ module.exports = {
       const { startOfWeek: nextWeekStart, endOfWeek: nextWeekEnd } = getWeekStartAndEndDates(new Date(currentDate.setDate(currentDate.getDate() + 7)));
       // console.log(currentWeekStart, currentWeekEnd, nextWeekStart, nextWeekEnd);
       // Fetch coupons from the database
-      const coupons = await Coupon.find({ userId }).select({ _id: 0 }).sort({ weekStartDate: -1 });
+      const coupons = await Coupon.find({ userId }).sort({ weekStartDate: -1 });
       
       // Filter coupons for current and next week
       // const validCoupons = coupons.filter((coupon) => {
@@ -29,6 +29,11 @@ module.exports = {
       // Only return at most one coupon for each week
       const currentWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === currentWeekStart.getDate());
       const nextWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === nextWeekStart.getDate());
+
+      console.log({
+        currentWeek: currentWeekCoupon,
+        nextWeek: nextWeekCoupon,
+      });
 
       res.json({
         currentWeek: currentWeekCoupon,
@@ -53,15 +58,13 @@ module.exports = {
 
   scanCoupon: async (req, res) => {
     try {
-      console.log(req.body);
       const {encryptedData} = req.body;
       if (!encryptedData) {
         return res.status(400).json({ success: false, message: "No QR data received." });
       }
 
       const data = decrypt(encryptedData);
-      const { userId, dayIndex, mealType } = data;
-      const qrCode = `${userId}-${dayIndex}-${mealType}`;
+      const { couponId, dayIndex, mealType } = data;
 
       let currentDayIndex = new Date().getDay() - 1; // Adjusting for week starting from Monday
       if (currentDayIndex === -1) currentDayIndex = 6; // Adjust Sunday to index 6
@@ -71,7 +74,7 @@ module.exports = {
           return res.status(400).json({ success: false, message: "You can only scan today's coupon." });
       }
 
-      const result = await CouponService.couponScan(userId, dayIndex, mealType, qrCode);
+      const result = await CouponService.couponScan(couponId, dayIndex, mealType);
       return res.status(result.success ? 200 : 400).json(result);
     } catch (error) {
       console.error("Error in scanCoupon:", error);

@@ -77,13 +77,16 @@ const couponPurchase = async (userId, selected) => {
   return result;
 };
 
-const couponScan = async(userId, dayIndex, mealType, qrCode) => {
+const couponScan = async(couponId, dayIndex, mealType) => {
   try{
-      const coupon = await Coupon.findOne({ userId});
+      const coupon = await Coupon.findById(couponId);
+
       if (!coupon) return { success: false, message: "Coupon not found" };
 
       const qrKey = `${dayIndex}-${mealType}`;
       const qrData = coupon.qrInfo.get(qrKey);
+
+      const qrCode = `${coupon.userId}-${dayIndex}-${mealType}`
 
       if (qrData.scanned) {
         console.log("QR used");
