@@ -2,7 +2,9 @@ const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const nodemailer = require('nodemailer');
 
-const connection = new Redis(process.env.REDIS_URL);
+const connection = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null
+});
 
 const emailWorker = new Worker('emailQueue', async (job) => {
   const { email, otp } = job.data;
