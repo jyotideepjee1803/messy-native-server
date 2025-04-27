@@ -53,11 +53,12 @@ module.exports = {
 
   scanCoupon: async (req, res) => {
     try {
+      console.log(req.body);
       const {encryptedData} = req.body;
       if (!encryptedData) {
         return res.status(400).json({ success: false, message: "No QR data received." });
       }
-      
+
       const data = decrypt(encryptedData);
       const { userId, dayIndex, mealType } = data;
       const qrCode = `${userId}-${dayIndex}-${mealType}`;
