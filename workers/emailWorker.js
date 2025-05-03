@@ -1,19 +1,7 @@
-const express = require('express');
+require('dotenv').config();
 const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const nodemailer = require('nodemailer');
-
-const app = express();
-
-// Create a dummy server just to satisfy Render
-const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => {
-  res.send('Email Worker is running');
-});
-app.listen(PORT, () => {
-  console.log(`Worker server listening on port ${PORT}`);
-});
-
 
 const connection = new Redis(process.env.REDIS_URL, {
     maxRetriesPerRequest: null
@@ -24,10 +12,14 @@ const emailWorker = new Worker('emailQueue', async (job) => {
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
+    host: 'smtp.gmail.com',
+    secure: false, // Disable TLS/SSL encryption (Insecure)
+    port:587,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    debug: true,
   });
 
   const mailOptions = {
@@ -43,5 +35,14 @@ const emailWorker = new Worker('emailQueue', async (job) => {
 
   await transporter.sendMail(mailOptions);
 }, { connection });
+
+emailWorker.on('completed', job => {
+	console.log(`Job ${job.id} done`);
+})
+
+emailWorker.on('failed', (job,err) => {
+        console.log(`Job ${job.id} failed: ${err.message}`);
+})
+
 
 console.log('Email Worker running...');

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const Razorpay = require('razorpay')
 const {Payment} = require('../../Models/payment')
 const {Coupon} = require('../../Models/coupon');
