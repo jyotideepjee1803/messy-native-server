@@ -80,8 +80,12 @@ const couponPurchase = async (userId, selected) => {
 const couponScan = async(couponId, dayIndex, mealType) => {
   try{
       const coupon = await Coupon.findById(couponId);
-
       if (!coupon) return { success: false, message: "Coupon not found" };
+
+      const {startOfWeek} = getWeekStartAndEndDates(new Date());
+      if(startOfWeek.toISOString().split('T')[0] !== coupon.weekStartDate.toISOString().split('T')[0]) {
+        return { success: false, message: "You can't scan this week's coupon" };
+      }
 
       const qrKey = `${dayIndex}-${mealType}`;
       const qrData = coupon.qrInfo.get(qrKey);
