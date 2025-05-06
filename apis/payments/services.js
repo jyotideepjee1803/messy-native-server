@@ -81,7 +81,7 @@ module.exports = {
           weekStartDate,
           createdAt: new Date(),
         });
-        console.log("New Coupon Created:", res);
+        console.log("New Coupon Created");
       } else {
         console.log("Coupon for this week already exists.");
       }

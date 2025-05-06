@@ -30,11 +30,6 @@ module.exports = {
       const currentWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === currentWeekStart.getDate());
       const nextWeekCoupon = coupons.find(coupon => new Date(coupon.weekStartDate).getDate() === nextWeekStart.getDate());
 
-      console.log({
-        currentWeek: currentWeekCoupon,
-        nextWeek: nextWeekCoupon,
-      });
-
       res.json({
         currentWeek: currentWeekCoupon,
         nextWeek: nextWeekCoupon,
