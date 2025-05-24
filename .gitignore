@@ -23,4 +23,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-./config/firebase/firebase-private-key.json
+config/firebase/*.json
