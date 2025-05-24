@@ -91,7 +91,7 @@ Before you begin, ensure you have the following installed:
     ```
 
 ## License
-This project is licensed under the MIT License. See LICENSE for details.
+This project is licensed under the GNU GPL License. See LICENSE for details.
 
 ## Contributing
 Feel free to fork and submit pull requests. Issues and suggestions are always welcome!
